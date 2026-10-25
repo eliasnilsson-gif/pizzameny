@@ -67,6 +67,24 @@ button:disabled{opacity:.6;cursor:default}
 .again:hover{background:rgba(184,49,42,.07)}
 .ciao{font-family:var(--script);font-size:56px;color:var(--red);text-align:center;margin-top:18px;line-height:1}
 .test{background:#fff3c4;border:1px dashed #c9a227;color:#6b5410;border-radius:10px;padding:10px 14px;font-size:16px;text-align:center}
+.tally{margin-top:44px;text-align:center}
+.sprig.small{width:min(240px,60%);margin-bottom:10px}
+.tally h2{font-family:var(--display);font-weight:900;font-style:italic;font-size:clamp(32px,7vw,44px);color:var(--red);margin:6px 0 4px;text-wrap:balance}
+.total{font-style:italic;font-size:20px;color:var(--soft);margin:0 0 22px}
+.total b{font-family:var(--display);font-style:normal;color:var(--ink);font-size:24px}
+.bars{display:grid;gap:18px;text-align:left}
+.bar{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center}
+.bar img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--red),0 4px 10px rgba(80,40,10,.18)}
+.bar .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;line-height:1.2}
+.bar .top span:first-child{min-width:0}
+.bar .cnt{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--red);font-size:22px}
+.bar .cnt small{font-family:var(--body);font-weight:500;font-style:italic;color:var(--soft);font-size:16px}
+.track{margin-top:7px;height:22px;border-radius:30px;background:#ece0cc;box-shadow:inset 0 1px 2px rgba(80,40,10,.15);overflow:hidden}
+.fill{height:100%;width:0;border-radius:30px;transition:width .9s cubic-bezier(.2,.8,.2,1);
+ background:repeating-conic-gradient(rgba(255,255,255,.18) 0 25%,transparent 0 50%) 0 0/22px 22px,var(--red)}
+.fill.vit{background:repeating-conic-gradient(rgba(255,255,255,.2) 0 25%,transparent 0 50%) 0 0/22px 22px,var(--green)}
+.note{font-style:italic;font-size:15px;color:var(--soft);margin:20px 0 0;opacity:.85}
+@media (max-width:480px){.bar{grid-template-columns:52px 1fr;gap:12px}.bar img{width:52px;height:52px}.bar .top{font-size:17px}}
 @media (max-width:480px){.frame{padding:30px 14px 26px}.pizza{grid-template-columns:76px 1fr;gap:12px}.pizza img{width:76px;height:76px}.pizza .n{font-size:21px}.pizza .i{font-size:17px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -115,6 +133,15 @@ button:disabled{opacity:.6;cursor:default}
  <button class="again" id="again" type="button">Välj åt någon mer</button>
 </div>
 
+<section class="tally" id="tally" aria-labelledby="tallyh">
+ <svg class="sprig small" viewBox="0 0 420 70" aria-hidden="true"><line x1="20" y1="35" x2="150" y2="35" stroke="#b8312a" stroke-width="2"/><line x1="270" y1="35" x2="400" y2="35" stroke="#b8312a" stroke-width="2"/><g transform="translate(210 40)"><path d="M0 0 C-12 -10,-40 -40,-58 -24 C-46 -6,-20 2,0 0Z" fill="#3f6b3a"/><path d="M0 0 C12 -10,40 -40,58 -24 C46 -6,20 2,0 0Z" fill="#4f7f45"/><path d="M0 0 C-8 -14,-8 -40,0 -52 C8 -40,8 -14,0 0Z" fill="#5a8c4c"/><circle cx="0" cy="8" r="9" fill="#b8312a"/></g></svg>
+ <div class="kicker">Sammanställning</div>
+ <h2 id="tallyh">Så här har gästerna valt</h2>
+ <p class="total" id="total">Valen visas här så snart de första har kommit in.</p>
+ <div class="bars" id="bars"></div>
+ <p class="note">Uppdateras av sig själv. Ett nytt val kan ta några minuter innan det syns.</p>
+</section>
+
 <div class="ciao">Buon appetito!</div>
 </div></div>
 <div class="check"></div>
@@ -151,6 +178,49 @@ f.addEventListener('submit', e => {
   f.hidden = true; document.getElementById('done').hidden = false;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+// Sammanställning: läser antal per pizza från den publicerade fliken i kalkylarket (bara siffror, inga namn).
+const SUMMARY_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSDQkdkgmNVi1vUHDd5-I6jDh0pnXN44xwR9eB9UEQugnu0G1CGu6Luws_WwlbWCGnqZgKWvMCWbXtj/pub?gid=169597369&single=true&output=csv";
+const PIZZOR = [
+  { key:'Pepperoni & jalapeños', namn:'Pepperoni & jalapeños', img:'pepperoni', vit:false },
+  { key:'Parmaskinka', namn:'Parmaskinka', img:'parmaskinka', vit:false },
+  { key:'Chèvre (vit)', namn:'Chèvre', img:'chevre', vit:true },
+  { key:'Sparris, citron & dill (vit)', namn:'Sparris, citron & dill', img:'sparris', vit:true }
+];
+let counts = Object.fromEntries(PIZZOR.map(p => [p.key, 0])), extra = {};
+function drawBars() {
+  const c = PIZZOR.map(p => (counts[p.key] || 0) + (extra[p.key] || 0));
+  const sum = c.reduce((a, b) => a + b, 0), max = Math.max(1, ...c);
+  document.getElementById('total').innerHTML = sum
+    ? `<b>${sum}</b> ${sum === 1 ? 'gäst har' : 'gäster har'} valt hittills`
+    : 'Valen visas här så snart de första har kommit in.';
+  const bars = document.getElementById('bars');
+  if (!bars.children.length) bars.innerHTML = PIZZOR.map(p => `
+    <div class="bar"><img src="bilder/${p.img}.jpg" alt="">
+     <div><div class="top"><span>${p.namn.replace('&','&amp;')}</span><span class="cnt"></span></div>
+     <div class="track"><div class="fill${p.vit ? ' vit' : ''}"></div></div></div></div>`).join('');
+  [...bars.children].forEach((el, i) => {
+    el.querySelector('.cnt').innerHTML = `${c[i]} <small>st</small>`;
+    requestAnimationFrame(() => el.querySelector('.fill').style.width = (c[i] / max * 100) + '%');
+  });
+}
+async function loadSummary() {
+  if (!SUMMARY_CSV) return drawBars();
+  try {
+    const txt = await (await fetch(SUMMARY_CSV + '&t=' + Date.now(), { cache: 'no-store' })).text();
+    const rows = txt.trim().split(/\r?\n/).slice(1);
+    const next = {};
+    rows.forEach(r => { const m = r.match(/^"?(.*?)"?,(\d+)\s*$/); if (m) next[m[1]] = +m[2]; });
+    PIZZOR.forEach(p => { if (next[p.key] !== undefined && next[p.key] >= (counts[p.key] || 0) + (extra[p.key] || 0)) extra[p.key] = 0; });
+    counts = Object.assign(counts, next);
+  } catch (e) { /* visar senast kända siffror */ }
+  drawBars();
+}
+loadSummary(); setInterval(loadSummary, 60000);
+f.addEventListener('submit', () => {
+  const v = f.querySelector('input[name=pizza]:checked');
+  if (ready && v && f.namn.value.trim()) { extra[v.value] = (extra[v.value] || 0) + 1; drawBars(); }
+});
+
 document.getElementById('again').addEventListener('click', () => {
   f.reset(); f.hidden = false; document.getElementById('done').hidden = true; f.namn.focus();
 });
