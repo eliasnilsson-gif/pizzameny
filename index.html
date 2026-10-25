@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pizzameny</title>
+<meta name="description" content="Välj din pizza till pizzakvällen">
+<meta property="og:title" content="Pizzameny">
+<meta property="og:description" content="Välj din pizza till pizzakvällen">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,900&family=EB+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+/* Trattoria: krämpapper, rutig duk upptill och nedtill, dubbel röd ram, kort per pizza */
+:root{
+ --paper:#f5ecda; --card:#fbf6ec; --ink:#2c2420; --soft:#4a3d34;
+ --red:#b8312a; --red-soft:#e3a29b; --green:#3f6b3a;
+ --display:'Playfair Display',Georgia,serif; --body:'EB Garamond',Garamond,Georgia,serif; --script:'Great Vibes',cursive;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:19px;line-height:1.4;
+ background-image:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.6),rgba(255,255,255,0) 70%);min-height:100vh}
+.check{height:34px;background:repeating-conic-gradient(var(--red) 0 25%,var(--paper) 0 50%) 0 0/34px 34px;position:relative}
+.check:after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(rgba(184,49,42,.45) 0 25%,transparent 0 50%) 8.5px 8.5px/17px 17px}
+.wrap{max-width:760px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-left)) 28px max(16px,env(safe-area-inset-right))}
+.frame{border:2px solid var(--red);outline:1px solid var(--red);outline-offset:-9px;padding:38px 22px 34px}
+header{text-align:center}
+.kicker{font-weight:600;letter-spacing:.38em;font-size:14px;color:var(--green);text-transform:uppercase}
+h1{font-family:var(--display);font-style:italic;font-weight:900;font-size:clamp(58px,15vw,104px);line-height:1;margin:8px 0 0;color:var(--red)}
+.sprig{display:block;margin:6px auto 0;width:min(320px,80%);height:auto}
+.intro{font-style:italic;font-size:21px;color:var(--soft);margin:14px auto 0;max-width:30em;text-wrap:balance}
+form{margin-top:30px;display:grid;gap:26px}
+.field label{display:block;font-family:var(--display);font-weight:700;font-size:22px;margin-bottom:8px;text-align:center}
+.field input,.field textarea{width:100%;font:inherit;font-size:20px;color:var(--ink);background:var(--card);border:1.5px solid #cdb9a0;border-radius:10px;padding:12px 14px}
+.field input:focus,.field textarea:focus{outline:3px solid rgba(63,107,58,.35);border-color:var(--green)}
+.field textarea{min-height:76px;resize:vertical}
+fieldset{border:0;margin:0;padding:0}
+legend{font-family:var(--display);font-weight:700;font-size:22px;text-align:center;width:100%;margin-bottom:12px}
+.pizzas{display:grid;gap:14px}
+.pizza{position:relative;display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center;background:var(--card);border:1.5px solid #e2d3bd;border-radius:16px;padding:14px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+.pizza:hover{border-color:var(--red-soft)}
+.pizza input{position:absolute;opacity:0;pointer-events:none}
+.pizza img{width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 0 0 1.5px var(--red),0 6px 14px rgba(80,40,10,.2)}
+.pizza .t{min-width:0}
+.pizza .n{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.15;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.pizza .i{font-style:italic;font-size:18px;color:var(--soft);margin-top:4px}
+.badge{font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.2em;text-transform:uppercase;border:1.3px solid var(--green);color:var(--green);border-radius:30px;padding:3px 10px 2px}
+.tick{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;border:1.5px solid #cdb9a0;background:var(--paper);display:grid;place-items:center}
+.tick svg{opacity:0}
+.pizza:has(input:checked){border-color:var(--red);box-shadow:0 0 0 2px var(--red),0 10px 22px rgba(120,40,20,.15)}
+.pizza:has(input:checked) .tick{background:var(--red);border-color:var(--red)}
+.pizza:has(input:checked) .tick svg{opacity:1}
+.pizza:has(input:focus-visible){outline:3px solid rgba(63,107,58,.45);outline-offset:3px}
+.pizza .n{padding-right:34px}
+.legend{text-align:center;font-style:italic;color:var(--soft);font-size:17px}
+.legend b{font-style:normal;font-weight:600;letter-spacing:.18em;color:var(--green);font-size:13px}
+button{font-family:var(--display);font-weight:700;font-size:22px;color:#fff;background:var(--red);border:0;border-radius:40px;padding:16px 30px;cursor:pointer;box-shadow:0 8px 18px rgba(184,49,42,.3);justify-self:center;min-width:240px}
+button:hover{background:#9f2822}
+button:disabled{opacity:.6;cursor:default}
+.err{color:var(--red);text-align:center;font-style:italic;min-height:1.2em;margin:-12px 0 0}
+.done{text-align:center;padding:20px 0 6px}
+.done h2{font-family:var(--display);font-weight:900;font-size:40px;margin:10px 0 4px;color:var(--ink)}
+.done p{font-style:italic;font-size:21px;color:var(--soft);margin:6px 0}
+.done img{width:150px;height:150px;border-radius:50%;object-fit:cover;border:6px solid #fff;box-shadow:0 0 0 2px var(--red),0 10px 22px rgba(80,40,10,.25)}
+.again{background:transparent;color:var(--red);box-shadow:none;border:1.5px solid var(--red);font-size:19px;margin-top:18px;min-width:0}
+.again:hover{background:rgba(184,49,42,.07)}
+.ciao{font-family:var(--script);font-size:56px;color:var(--red);text-align:center;margin-top:18px;line-height:1}
+.test{background:#fff3c4;border:1px dashed #c9a227;color:#6b5410;border-radius:10px;padding:10px 14px;font-size:16px;text-align:center}
+@media (max-width:480px){.frame{padding:30px 14px 26px}.pizza{grid-template-columns:76px 1fr;gap:12px}.pizza img{width:76px;height:76px}.pizza .n{font-size:21px}.pizza .i{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="check"></div>
+<div class="wrap"><div class="frame">
+<header>
+ <div class="kicker">Kvällens pizzor</div>
+ <h1>Pizzameny</h1>
+ <svg class="sprig" viewBox="0 0 420 70" aria-hidden="true">
+  <line x1="20" y1="35" x2="150" y2="35" stroke="#b8312a" stroke-width="2"/>
+  <line x1="270" y1="35" x2="400" y2="35" stroke="#b8312a" stroke-width="2"/>
+  <g transform="translate(210 40)">
+   <path d="M0 0 C-12 -10,-40 -40,-58 -24 C-46 -6,-20 2,0 0Z" fill="#3f6b3a"/>
+   <path d="M0 0 C12 -10,40 -40,58 -24 C46 -6,20 2,0 0Z" fill="#4f7f45"/>
+   <path d="M0 0 C-8 -14,-8 -40,0 -52 C8 -40,8 -14,0 0Z" fill="#5a8c4c"/>
+   <circle cx="0" cy="8" r="9" fill="#b8312a"/>
+  </g>
+ </svg>
+ <p class="intro">Skriv ditt namn och tryck på den pizza du vill ha.</p>
+</header>
+
+<form id="f" novalidate>
+ <div id="testnote" class="test" hidden>Testläge: valen sparas inte ännu.</div>
+ <div class="field"><label for="namn">Ditt namn</label><input id="namn" name="namn" autocomplete="name" placeholder="Förnamn och efternamn" required></div>
+ <fieldset>
+  <legend>Välj din pizza</legend>
+  <div class="pizzas">
+   <label class="pizza"><input type="radio" name="pizza" value="Pepperoni & jalapeños"><img src="bilder/pepperoni.jpg" alt=""><div class="t"><div class="n">Pepperoni &amp; jalapeños</div><div class="i">Tomatsås, mozzarella, pepperoni, jalapeños, rödlök och oregano</div></div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+   <label class="pizza"><input type="radio" name="pizza" value="Parmaskinka"><img src="bilder/parmaskinka.jpg" alt=""><div class="t"><div class="n">Parmaskinka</div><div class="i">Tomatsås, mozzarella, lufttorkad parmaskinka, rucola, hyvlad parmesan och en skvätt olivolja</div></div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+   <label class="pizza"><input type="radio" name="pizza" value="Chèvre (vit)"><img src="bilder/chevre.jpg" alt=""><div class="t"><div class="n">Chèvre <span class="badge">Vit pizza</span></div><div class="i">Crème fraiche, mozzarella, chèvre, rödlök, valnötter, honung och färsk timjan</div></div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+   <label class="pizza"><input type="radio" name="pizza" value="Sparris, citron & dill (vit)"><img src="bilder/sparris.jpg" alt=""><div class="t"><div class="n">Sparris, citron &amp; dill <span class="badge">Vit pizza</span></div><div class="i">Crème fraiche med citron, mozzarella, grön sparris, parmesan, färsk dill och rivet citronskal</div></div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>
+  </div>
+ </fieldset>
+ <div class="legend"><b>VIT PIZZA</b> &nbsp;bakas på crème fraiche i stället för tomatsås</div>
+ <div class="field"><label for="ovrigt">Allergier eller önskemål <span style="font-weight:400;font-style:italic;font-family:var(--body)">(frivilligt)</span></label><textarea id="ovrigt" name="ovrigt" placeholder="T.ex. utan rödlök"></textarea></div>
+ <p class="err" id="err" role="alert"></p>
+ <button type="submit" id="send">Skicka mitt val</button>
+</form>
+
+<div class="done" id="done" hidden>
+ <img id="doneimg" src="" alt="">
+ <h2>Tack, <span id="donename"></span>!</h2>
+ <p>Ditt val är sparat: <b id="donepizza" style="font-style:normal"></b></p>
+ <button class="again" id="again" type="button">Välj åt någon mer</button>
+</div>
+
+<div class="ciao">Buon appetito!</div>
+</div></div>
+<div class="check"></div>
+
+<iframe name="gf" id="gf" title="" style="display:none"></iframe>
+<script>
+// Google Formulär som tar emot valen. Fylls i när formuläret är skapat.
+const FORM = {
+  action: "https://docs.google.com/forms/d/e/1FAIpQLSc4raMZ9kSzCMKZzioL5xzsu9xLdAQqwwVStBj0EzmpQOh1Eg/formResponse",
+  namn: "entry.1013429865", pizza: "entry.1789500516", ovrigt: "entry.179365547"
+};
+
+const f = document.getElementById('f'), err = document.getElementById('err');
+const ready = FORM.action && FORM.namn && FORM.pizza;
+if (!ready) document.getElementById('testnote').hidden = false;
+const imgFor = { 'Pepperoni & jalapeños':'pepperoni', 'Parmaskinka':'parmaskinka', 'Chèvre (vit)':'chevre', 'Sparris, citron & dill (vit)':'sparris' };
+
+f.addEventListener('submit', e => {
+  e.preventDefault(); err.textContent = '';
+  const namn = f.namn.value.trim(), val = f.querySelector('input[name=pizza]:checked'), ovrigt = f.ovrigt.value.trim();
+  if (!namn) { err.textContent = 'Skriv ditt namn först.'; f.namn.focus(); return; }
+  if (!val) { err.textContent = 'Tryck på den pizza du vill ha.'; return; }
+  if (ready) {
+    const post = document.createElement('form');
+    post.method = 'POST'; post.action = FORM.action; post.target = 'gf'; post.style.display = 'none';
+    [[FORM.namn, namn], [FORM.pizza, val.value], [FORM.ovrigt, ovrigt]].forEach(([k, v]) => {
+      if (!k) return; const i = document.createElement('input'); i.name = k; i.value = v; post.appendChild(i);
+    });
+    document.body.appendChild(post); post.submit(); post.remove();
+  }
+  document.getElementById('donename').textContent = namn.split(' ')[0];
+  document.getElementById('donepizza').textContent = val.value;
+  document.getElementById('doneimg').src = 'bilder/' + imgFor[val.value] + '.jpg';
+  f.hidden = true; document.getElementById('done').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+document.getElementById('again').addEventListener('click', () => {
+  f.reset(); f.hidden = false; document.getElementById('done').hidden = true; f.namn.focus();
+});
+</script>
+</body>
+</html>
